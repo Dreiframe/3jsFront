@@ -7,10 +7,21 @@ import GUI from 'lil-gui'
 
 import { getTif, tif2pcd3dcolor } from '../utils/tifUtilities';
 
+import UrlContext from '../reducers/urlReducer'
+import { useContext } from 'react'
+import { getTifFile } from "../services/mmlAp";
+
+
 function PointCloud() {
+  const [tifUrl, dispatch] = useContext(UrlContext)
   const refContainer = useRef(null);
-  const isLocal = true
+
+  let isLocal = false // true
+  if (tifUrl !== undefined){
+    isLocal = false
+  }
   
+
   useEffect(() => {
     const size = 400//window.innerHeight
 
@@ -37,8 +48,10 @@ function PointCloud() {
 
     // pointcloud
     if (!isLocal){
-      getTif().then(data => {
+      getTifFile(62.64568469181762, 29.81714359294687).then(data => {
         const points = tif2pcd3dcolor(data)
+
+        console.log('asd')
         
         points.geometry.center()
         points.name = 'pointclouddatafile.pcd';
@@ -46,6 +59,19 @@ function PointCloud() {
   
         render()
       })
+      /*
+      getTif(tifUrl).then(data => {
+        const points = tif2pcd3dcolor(data)
+
+        console.log('asd')
+        
+        points.geometry.center()
+        points.name = 'pointclouddatafile.pcd';
+        scene.add( points );
+  
+        render()
+      })
+      */
     } else {
       const loader = new PCDLoader();
       // 'http://localhost:3001/pcd' or '/pcd/main_test.pcd'
@@ -79,7 +105,7 @@ function PointCloud() {
     }
 
     render()
-  }, []);
+  }, [tifUrl]);
   
   return (
     <div ref={refContainer}>

@@ -8,9 +8,10 @@ const colorMap = (x, in_min, in_max) => {
 }
 
 
-export const getTif = async () => {
+export const getTif = async (urlPath) => {
     // responseType: 'arraybuffer' is critical, tiff decode or utiff decode both work on buffers
-    const request = axios.get('http://localhost:3001/tif', {responseType: 'arraybuffer'})
+    // urlPath  'http://localhost:3001/tif'
+    const request = axios.get(urlPath, {responseType: 'arraybuffer'})
     return request.then(response => {
       return response.data
     })
