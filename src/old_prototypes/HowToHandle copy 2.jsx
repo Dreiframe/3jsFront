@@ -1,12 +1,7 @@
 import * as THREE from 'three';
 import { PCDLoader } from "three/examples/jsm/loaders/PCDLoader"
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls"
-
 import { useRef, useEffect, useState, forwardRef, useImperativeHandle } from 'react';
-
-import { getTifFile } from "../services/mmlAp";
-import { tif2pcd3dcolor } from '../utils/tifUtilities';
-
 
 
 // three.js setup ##########################################################################
@@ -46,65 +41,39 @@ var isLocal = true // false = get map from maanmittauslaitos
 // main component function
 const HowToHandle = forwardRef((props, ref) => {
     const refContainer = useRef(null)
-    const [testState, setTestState] = useState(null)
+    const [testState, setTestState] = useState('main_test.pcd')
+
+    //console.log('HowToHandle Loaded, state:', testState)
 
     useImperativeHandle(ref, () => ({
 
-        setScene(coordinates) {
-            console.log(coordinates)
-            if ( coordinates.lat &&  coordinates.lng) {
-                resetScene()
-                isLocal = false
-                setTestState({lat: coordinates.lat, lng: coordinates.lng})
-            }
+        setScene(fileName) {
+            resetScene()
+            setTestState(fileName)
         }
     
     }));
     
     // useRef renderer initialize
     useEffect(() => {
+
+        console.log('useEffect 1, state:', testState)
         refContainer.current && refContainer.current.appendChild( renderer.domElement )
+
     },[])
 
     
     // pcd loader setup, update on state change.
     useEffect(() => {
-        // on initial page load get local pcd example file, faster than getting from mml api.
-        if( isLocal ){
+        console.log('useEffect 2, state:', testState)
 
-            loader.load( '/pcd/main_test.pcd', function ( points ) {
-                points.geometry.center();
-                points.name = 'point_cloud';
-                scene.add( points );
-        
-                render()
-            })
-
-        } else {
-            console.log('fetching data from mml api')
-
-            if (!testState) return;
-
-            getTifFile(testState.lat, testState.lng)
-                .then(data => {
-                    console.log('converting fetched data to pointcloud')
-
-                    const points = tif2pcd3dcolor(data)
-
-                    console.log('done fetching')
-                    
-                    points.geometry.center()
-                    points.name = 'point_cloud';
-                    scene.add( points );
-                
-                    render()
-            })
-                .catch(error => {
-                    // backend down, or other issues?
-                    console.log('error:', error)
-            })
-
-        }
+        loader.load( '/pcd/' + testState, function ( points ) {
+            points.geometry.center();
+            points.name = 'point_cloud';
+            scene.add( points );
+    
+            render()
+        })
 
     }, [testState])
 

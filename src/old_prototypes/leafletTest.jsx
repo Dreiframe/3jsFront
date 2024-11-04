@@ -43,7 +43,8 @@ const LeafletTesting = () => {
 
     return (
         <div>
-            <MapContainer center={[62.66591065727223, 29.81011475983172]} zoom={16} style={{ height: "400px", width: "400px" }}>
+            <DisplayCoordinates coordinates={coordinates}/>
+            <MapContainer center={[62.663354542428245, 29.815711062371737]} zoom={12} style={{ height: "400px", width: "400px" }}>
                 <TileLayer
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"

@@ -3,7 +3,7 @@ import PointCloud from './components/PointCloud'
 
 import { getTifUrl } from './services/mmlAp'
 import UrlContext from './reducers/urlReducer'
-import { useContext } from 'react'
+import { useContext, useRef } from 'react'
 
 import LeafletTesting from './components/leafletTest'
 
@@ -25,13 +25,23 @@ function App() {
     }
   }
 
+  const childRef = useRef()
 
   return (
     <div>
-      <p>hello</p>
-      
-      <div style={{borderColor:"grey", borderStyle:"solid", borderWidth:"2px", width:"400px", height:"400px"}}>
-        <HowToHandle/>
+      <TifUrlDisplay/>
+      <button onClick={() => childRef.current.setScene({lat: tifUrl.lat, lng: tifUrl.lng})}>fetch</button>
+
+      <div className='DualContainer'>
+
+        <div style={{borderStyle: "solid", borderColor: "red", borderWidth:1}}>
+          <LeafletTesting/>
+        </div>
+
+        <div style={{borderColor:"grey", borderStyle:"solid", borderWidth:"2px", width:"400px", height:"400px"}}>
+          <HowToHandle ref={childRef}/>
+        </div>
+
       </div>
     </div>
   )
