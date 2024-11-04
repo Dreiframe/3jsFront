@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import * as THREE from 'three';
 import { PCDLoader } from "three/examples/jsm/loaders/PCDLoader"
@@ -12,13 +12,41 @@ import { useContext } from 'react'
 import { getTifFile } from "../services/mmlAp";
 
 
+// when page is initially loaded use local pcd file, because mml api takes for ever..
+let isLocal = true // false = get map from maanmittauslaitos
+
+
 function PointCloud() {
   const [tifUrl, dispatch] = useContext(UrlContext)
   const refContainer = useRef(null);
 
-  let isLocal = false // true
+  const [leafCoords, setLeafCoords] = useState(null)
+
+
+  // on click event whone component reloads and this is set to true again..
+  // reloads whole component... why??? because of useContext???
+  // let isLocal = true // false = get map from maanmittauslaitos
+  console.log('RELOADED WHOLE FUCKING COMPONENTS')
+
+  /*
   if (tifUrl !== undefined){
     isLocal = false
+  }
+  */
+
+
+  // on click set coordinates which useEffect reloads 3js again, and set local to false so we get data from mml api
+  const clickEvent = (event) => {
+    console.log(tifUrl)
+    event.preventDefault()
+
+    if(tifUrl){
+      console.log('done')
+      isLocal = false
+      setLeafCoords({lat: tifUrl.lat, lng: tifUrl.lng})
+    } else {
+      console.log('nope')
+    }
   }
   
 
@@ -46,19 +74,26 @@ function PointCloud() {
     controls.maxDistance = 350;
     // controls.mouseButtons = { LEFT: THREE.MOUSE.PAN, MIDDLE: THREE.MOUSE.DOLLY, RIGHT: THREE.MOUSE.ROTATE };
 
+    console.log(isLocal)
     // pointcloud
     if (!isLocal){
-      getTifFile(62.64568469181762, 29.81714359294687).then(data => {
-        const points = tif2pcd3dcolor(data)
+      //getTifFile(62.64568469181762, 29.81714359294687)
+      getTifFile(tifUrl.lat, tifUrl.lng)
+        .then(data => {
+          const points = tif2pcd3dcolor(data)
 
-        console.log('asd')
-        
-        points.geometry.center()
-        points.name = 'pointclouddatafile.pcd';
-        scene.add( points );
-  
-        render()
+          console.log('asd')
+          
+          points.geometry.center()
+          points.name = 'pointclouddatafile.pcd';
+          scene.add( points );
+    
+          render()
       })
+        .catch(error => {
+          // backend down, or other issues?
+          console.log('error:', error)
+        })
       /*
       getTif(tifUrl).then(data => {
         const points = tif2pcd3dcolor(data)
@@ -105,10 +140,11 @@ function PointCloud() {
     }
 
     render()
-  }, [tifUrl]);
+  }, [leafCoords]);
   
   return (
     <div ref={refContainer}>
+      <button onClick={(e) => clickEvent(e)}>get map</button>
     </div>
   );
 }
