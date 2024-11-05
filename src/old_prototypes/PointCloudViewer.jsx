@@ -8,6 +8,7 @@ import { getTifFile } from "../services/mmlAp";
 import { tif2pcd3dcolor } from '../utils/tifUtilities';
 
 
+
 // three.js setup ##########################################################################
 const size = 500 // window.innerWidth
 
@@ -17,25 +18,18 @@ var renderer = new THREE.WebGLRenderer()
 const loader = new PCDLoader()
 const light = new THREE.HemisphereLight()
 
-// diagnose mode
-if (false) { 
-    let texture = new THREE.TextureLoader().load( 'https://threejs.org/examples/textures/uv_grid_opengl.jpg' );
-    texture.mapping = THREE.EquirectangularReflectionMapping;
-    scene.background = texture;
-    // The X axis is red. The Y axis is green. The Z axis is blue. 
-    const axesHelper = new THREE.AxesHelper( 50 )
-    scene.add( axesHelper );
-}
+let texture = new THREE.TextureLoader().load( 'uv_grid_opengl.jpg' );
+texture.mapping = THREE.EquirectangularReflectionMapping;
+scene.background = texture;
 
 renderer.setSize(size, size)
-camera.position.y = 350
+camera.position.z = 350
+camera.up.set(-1, 0, 0)
 
 const controls = new OrbitControls( camera, renderer.domElement )
 controls.addEventListener( 'change', render )
-controls.minDistance = 25
+controls.minDistance = 50
 controls.maxDistance = 350
-controls.zoomSpeed = 2
-
 
 scene.add(light)
 // #########################################################################################
@@ -93,14 +87,8 @@ const PointCloudViewer = forwardRef((props, ref) => {
                 points.geometry.center();
                 points.name = 'point_cloud';
                 points.material.size = 0.8
-
-                // DRRRR &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-                //points.geometry.rotateY((Math.PI / 2) * 3) // rotate 90 degreee three times
-                points.geometry.rotateX((Math.PI / 2) * 3) // rotate 90 degreee three times
-                points.geometry.rotateY((Math.PI / 2) * 3) // rotate 90 degreee three times
-
                 scene.add( points );
-         
+        
                 render()
             })
 
@@ -120,10 +108,6 @@ const PointCloudViewer = forwardRef((props, ref) => {
                     points.geometry.center()
                     points.name = 'point_cloud';
                     points.material.size = 0.8
-
-                    points.geometry.rotateX((Math.PI / 2) * 3) // rotate 90 degreee three times
-                    points.geometry.rotateY((Math.PI / 2) * 3) // rotate 90 degreee three times
-
                     scene.add( points );
                 
                     render()
