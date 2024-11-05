@@ -6,29 +6,30 @@ import { useContext, useRef } from 'react'
 import LeafletTesting from './components/leafletTest'
 
 //DELETE LATER
-import HowToHandle from './components/HowToHandle'
+import PointCloudViewer from './components/PointCloudViewer'
 
 function App() {
-  const [tifUrl, dispatch] = useContext(UrlContext)
+  const [coordinates, dispatch] = useContext(UrlContext)
 
-  const TifUrlDisplay = () => {
-    if (tifUrl) {
-      return <p>Latitude: {tifUrl.lat}, Longitude: {tifUrl.lng}</p>
+  const CoordinatesDisplay = () => {
+    if (coordinates) {
+      return <p>Latitude: {coordinates.lat}, Longitude: {coordinates.lng}</p>
     } else return <p> Click map to select coordinates </p>;
   }
 
   const childRef = useRef()
 
   const clickEvent = () => {
-    if (tifUrl) {
-      childRef.current.setScene({lat: tifUrl.lat, lng: tifUrl.lng})
+    if (coordinates) {
+      childRef.current.setScene({lat: coordinates.lat, lng: coordinates.lng})
     } else console.log('App Click error: latlng undefined')
   }
 
   return (
     <div>
-      <TifUrlDisplay/>
+      <CoordinatesDisplay/>
       <button onClick={() => clickEvent()}>fetch elevation map</button>
+      <button onClick={() => childRef.current.resetCamera()}>Reset camera</button>
 
       <div className='DualContainer'>
 
@@ -37,7 +38,7 @@ function App() {
         </div>
 
         <div style={{borderColor:"grey", borderStyle:"solid", borderWidth:"2px", width:"500px", height:"500px"}}>
-          <HowToHandle ref={childRef}/>
+          <PointCloudViewer ref={childRef}/>
         </div>
 
       </div>
