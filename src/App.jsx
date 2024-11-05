@@ -1,7 +1,5 @@
 import './App.css'
-import PointCloud from './components/PointCloud'
 
-import { getTifUrl } from './services/mmlAp'
 import UrlContext from './reducers/urlReducer'
 import { useContext, useRef } from 'react'
 
@@ -15,26 +13,26 @@ function App() {
 
   const TifUrlDisplay = () => {
     if (tifUrl) {
-      return (
-        <p>{tifUrl.lat} {tifUrl.lng}</p>
-      )
-    } else {
-      return (
-        <p> no coordinates </p>
-      )
-    }
+      return <p>Latitude: {tifUrl.lat}, Longitude: {tifUrl.lng}</p>
+    } else return <p> Click map to select coordinates </p>;
   }
 
   const childRef = useRef()
 
+  const clickEvent = () => {
+    if (tifUrl) {
+      childRef.current.setScene({lat: tifUrl.lat, lng: tifUrl.lng})
+    } else console.log('App Click error: latlng undefined')
+  }
+
   return (
     <div>
       <TifUrlDisplay/>
-      <button onClick={() => childRef.current.setScene({lat: tifUrl.lat, lng: tifUrl.lng})}>fetch</button>
+      <button onClick={() => clickEvent()}>fetch elevation map</button>
 
       <div className='DualContainer'>
 
-        <div style={{borderStyle: "solid", borderColor: "red", borderWidth:1}}>
+        <div style={{borderColor: "grey", borderStyle: "solid", borderWidth:"2px"}}>
           <LeafletTesting/>
         </div>
 
@@ -45,24 +43,6 @@ function App() {
       </div>
     </div>
   )
-  /*
-  return (
-    <>
-      <TifUrlDisplay/>
-      <h1>Testing:</h1>
-
-      <div className='DualContainer'>
-        <div style={{borderStyle: "solid", borderColor: "red", borderWidth:1}}>
-          <LeafletTesting/>
-        </div>
-
-        <div style={{borderColor:"grey", borderStyle:"solid", borderWidth:"2px", width:"400px", height:"400px"}}>
-          <PointCloud/>
-        </div>
-      </div>
-    </>
-  )
-    */
 }
 
 export default App

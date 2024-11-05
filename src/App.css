@@ -6,6 +6,6 @@
 }
 
 .DualContainer {
-  border: 1px blue solid;
+  border: 1px black solid;
   display: flex;
 }

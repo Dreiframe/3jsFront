@@ -51,7 +51,7 @@ const HowToHandle = forwardRef((props, ref) => {
     useImperativeHandle(ref, () => ({
 
         setScene(coordinates) {
-            console.log(coordinates)
+            console.log('setScene:', coordinates)
             if ( coordinates.lat &&  coordinates.lng) {
                 resetScene()
                 isLocal = false
@@ -75,7 +75,7 @@ const HowToHandle = forwardRef((props, ref) => {
             loader.load( '/pcd/main_test.pcd', function ( points ) {
                 points.geometry.center();
                 points.name = 'point_cloud';
-                points.material.size(2)
+                points.material.size = 0.8
                 scene.add( points );
         
                 render()
@@ -96,7 +96,7 @@ const HowToHandle = forwardRef((props, ref) => {
                     
                     points.geometry.center()
                     points.name = 'point_cloud';
-                    points.material.size(2)
+                    points.material.size = 0.8
                     scene.add( points );
                 
                     render()
