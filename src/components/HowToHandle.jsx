@@ -10,7 +10,7 @@ import { tif2pcd3dcolor } from '../utils/tifUtilities';
 
 
 // three.js setup ##########################################################################
-const size = 400 // window.innerWidth
+const size = 500 // window.innerWidth
 
 var scene = new THREE.Scene()
 var camera = new THREE.PerspectiveCamera(75, size / size, 0.1, 1000)
@@ -75,6 +75,7 @@ const HowToHandle = forwardRef((props, ref) => {
             loader.load( '/pcd/main_test.pcd', function ( points ) {
                 points.geometry.center();
                 points.name = 'point_cloud';
+                points.material.size(2)
                 scene.add( points );
         
                 render()
@@ -95,6 +96,7 @@ const HowToHandle = forwardRef((props, ref) => {
                     
                     points.geometry.center()
                     points.name = 'point_cloud';
+                    points.material.size(2)
                     scene.add( points );
                 
                     render()

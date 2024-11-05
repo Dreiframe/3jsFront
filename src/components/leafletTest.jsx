@@ -1,49 +1,38 @@
 import "leaflet/dist/leaflet.css"
 import { useState } from "react"
 
-import { MapContainer, TileLayer, useMapEvents, Marker } from "react-leaflet"
+import { MapContainer, TileLayer, useMapEvents, Rectangle } from "react-leaflet"
 
 import UrlContext from '../reducers/urlReducer'
 import { useContext } from 'react'
 
+import bboxFromLatLng from "../utils/bboxFromLatLng"
+
 // https://react-leaflet.js.org/docs/example-events/
 const LeafletTesting = () => {
     const [tifUrl, dispatch] = useContext(UrlContext)
-    const [coordinates, setCoordinates] = useState(null)
+    const [bbox, setbbox] = useState(bboxFromLatLng(62.66591065727223, 29.81011475983172))
 
-    // Event listener on map clicks and marker for coordinates
+    // Event listener on map clicks and 1km2 square rectangle at coordinates
     const LocationMarker = () => {
-        const map = useMapEvents({
-            click(){}
-        })
-    
-        map.on("click", event => {
-            const clickCoordinates = event.latlng
-            setCoordinates(clickCoordinates)
-            dispatch({type: "SET", payload: {lat: clickCoordinates.lat, lng: clickCoordinates.lng}})
+        useMapEvents({
+            click(event){
+                const clickCoordinates = event.latlng
+                dispatch({type: "SET", payload: {lat: clickCoordinates.lat, lng: clickCoordinates.lng}})
+
+                setbbox(bboxFromLatLng(clickCoordinates.lat, clickCoordinates.lng))
+            }
         })
 
-        return coordinates === null ? null : (
-            <Marker position={coordinates}>
-            </Marker>
-          )
+        return (
+            <Rectangle bounds={bbox} pathOptions={{color: "black"}}/>
+        )
     }
 
-    const DisplayCoordinates = ({coordinates}) => {
-        if (coordinates){
-            return (
-                <p>{coordinates.lat} {coordinates.lng}</p>
-            )
-        } else {
-            return (
-                <p>no coords</p>
-            )
-        }
-    }
 
     return (
         <div>
-            <MapContainer center={[62.66591065727223, 29.81011475983172]} zoom={16} style={{ height: "400px", width: "400px" }}>
+            <MapContainer center={[62.66591065727223, 29.81011475983172]} zoom={14} style={{ height: "500px", width: "500px" }}>
                 <TileLayer
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"

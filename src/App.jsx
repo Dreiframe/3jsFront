@@ -38,7 +38,7 @@ function App() {
           <LeafletTesting/>
         </div>
 
-        <div style={{borderColor:"grey", borderStyle:"solid", borderWidth:"2px", width:"400px", height:"400px"}}>
+        <div style={{borderColor:"grey", borderStyle:"solid", borderWidth:"2px", width:"500px", height:"500px"}}>
           <HowToHandle ref={childRef}/>
         </div>
 
