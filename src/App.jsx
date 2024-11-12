@@ -13,7 +13,7 @@ function App() {
 
   const CoordinatesDisplay = () => {
     if (storage) {
-      if (storage.lat && storage.lng){
+      if ('lat' in storage && 'lng' in storage){
         return <p>Latitude: {storage.lat}, Longitude: {storage.lng}</p>
       }
     }
@@ -25,7 +25,7 @@ function App() {
 
   const clickEvent = () => {
     if (storage) {
-      if (storage.lat && storage.lng){
+      if ('lat' in storage && 'lng' in storage){
         childRef.current.setScene({lat: storage.lat, lng: storage.lng})
         return
       }
@@ -52,7 +52,8 @@ function App() {
 
       </div>
       
-      <button onClick={() => dispatch({type: "SET", payload: {test: 1, pena: 2}})}>Test</button>
+      <button onClick={() => dispatch({type: "SET_INFO", payload: {size: 250, high: 10, low: 2}})}>set map stat</button>
+      <button onClick={() => dispatch({type: "SET_CURSOR", payload: {x:1, y:1, z:1}})}>set map stat</button>
 
       <PointCloudStats/>
     </div>

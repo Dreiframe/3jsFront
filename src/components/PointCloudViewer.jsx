@@ -54,6 +54,11 @@ function resetControls() {
     controls.reset()
 }
 
+function getPointsStats () {
+    const object = scene.getObjectByName('point_cloud')
+    console.log(object.geometry.attributes.position)
+}
+
 // when page is initially loaded use local pcd file, because mml api takes for ever..
 var isLocal = true // false = get map from maanmittauslaitos
 // main component function
@@ -139,6 +144,7 @@ const PointCloudViewer = forwardRef((props, ref) => {
 
     return (
         <div ref={refContainer}>
+            <button onClick={() => getPointsStats()}>test</button>
         </div>
     )
 })
