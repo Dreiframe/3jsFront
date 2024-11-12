@@ -1,28 +1,37 @@
 import './App.css'
 
-import UrlContext from './reducers/urlReducer'
+import StorageContext from './reducers/storageReducer'
 import { useContext, useRef } from 'react'
 
 import LeafletTesting from './components/leafletTest'
 
-//DELETE LATER
 import PointCloudViewer from './components/PointCloudViewer'
+import PointCloudStats from './components/PointCloudStats'
 
 function App() {
-  const [coordinates, dispatch] = useContext(UrlContext)
+  const [storage, dispatch] = useContext(StorageContext)
 
   const CoordinatesDisplay = () => {
-    if (coordinates) {
-      return <p>Latitude: {coordinates.lat}, Longitude: {coordinates.lng}</p>
-    } else return <p> Click map to select coordinates </p>;
+    if (storage) {
+      if (storage.lat && storage.lng){
+        return <p>Latitude: {storage.lat}, Longitude: {storage.lng}</p>
+      }
+    }
+
+    return <p> Click map to select coordinates </p>;
   }
 
   const childRef = useRef()
 
   const clickEvent = () => {
-    if (coordinates) {
-      childRef.current.setScene({lat: coordinates.lat, lng: coordinates.lng})
-    } else console.log('App Click error: latlng undefined')
+    if (storage) {
+      if (storage.lat && storage.lng){
+        childRef.current.setScene({lat: storage.lat, lng: storage.lng})
+        return
+      }
+    }
+
+    console.log('App Click error: latlng undefined')
   }
 
   return (
@@ -42,6 +51,10 @@ function App() {
         </div>
 
       </div>
+      
+      <button onClick={() => dispatch({type: "SET", payload: {test: 1, pena: 2}})}>Test</button>
+
+      <PointCloudStats/>
     </div>
   )
 }
