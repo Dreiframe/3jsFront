@@ -1,7 +1,7 @@
 import './App.css'
-import { tif2pcd, getTif, pcd2points } from './utils/tifUtilities'
+import { tif2pcd, getTif, pcd2points } from '../utils/tifUtilities'
 
-import PointCloudViewer from './components/PointCloudViewer'
+import PointCloudViewer from '../components/PointCloudViewer'
 
 function App(){
 

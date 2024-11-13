@@ -8,4 +8,7 @@
 .DualContainer {
   border: 1px black solid;
   display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
 }

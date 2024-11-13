@@ -8,6 +8,8 @@ import { getTif, tif2pcd, pcd2points } from '../utils/tifUtilities';
 import StorageContext from '../reducers/storageReducer';
 
 // three.js setup ##########################################################################
+console.log('Setting up three.js')
+const diagnoseMode = true
 const size = 500 // window.innerWidth
 
 var scene = new THREE.Scene()
@@ -16,7 +18,7 @@ var renderer = new THREE.WebGLRenderer()
 const light = new THREE.HemisphereLight()
 
 // diagnose mode
-if (false) { 
+if (diagnoseMode) { 
     let texture = new THREE.TextureLoader().load( 'https://threejs.org/examples/textures/uv_grid_opengl.jpg' );
     texture.mapping = THREE.EquirectangularReflectionMapping;
     scene.background = texture;
@@ -36,6 +38,92 @@ controls.zoomSpeed = 2
 
 
 scene.add(light)
+// #########################################################################################
+
+
+// Ray cast setup ##########################################################################
+let pointcloud
+
+const pointer = new THREE.Vector2();
+document.addEventListener( 'pointermove', onPointerMove );
+
+let raycaster, intersects;
+raycaster = new THREE.Raycaster();
+
+// onClick triggers on drag, so if this variable changes during onMouseDown and onClick the screen was dragged.
+let lastControlsAzimuth
+let lastControlsPolar
+
+function onPointerMove( event ) {
+    const rect = renderer.domElement.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+
+    pointer.x = ( x / size ) *  2 - 1;
+    pointer.y = ( y / size ) * - 2 + 1
+}
+
+function clickEvent(){
+    // dont execute if controls angles have changed since onMouseDown={() => onClickDownEvent()}, screen was dragged.
+    if (Math.abs(lastControlsAzimuth - controls.getAzimuthalAngle()) >= 0.01 &&
+        Math.abs(lastControlsPolar - controls.getPolarAngle()) >= 0.01){
+        return
+    }
+
+    raycaster.setFromCamera( pointer, camera );
+
+	intersects = raycaster.intersectObject( pointcloud );
+
+    if (diagnoseMode){
+        drawRay(raycaster)
+    }
+    //console.log(intersects)
+
+    /* Change pointcloud colors to red where intersects
+    if ( intersects.length > 0 ) {
+        for (let x in intersects) {
+            const indexi = intersects[x].index
+            pointcloud.geometry.attributes.color.setXYZ(indexi, 1, 0, 0) 
+        }
+    }
+    pointcloud.geometry.attributes.color.needsUpdate = true
+    */
+
+    render()
+}
+
+function onClickDownEvent(){
+    // onClick and drag conflict workaround
+    lastControlsAzimuth = controls.getAzimuthalAngle()
+    lastControlsPolar = controls.getPolarAngle()
+}
+
+function drawRay(raycaster) {
+    // Remove the previous line if it exists
+    const prevLine = scene.getObjectByName("rayLine");
+    if (prevLine) {
+        scene.remove(prevLine);
+    }
+
+    // The raycaster.ray contains the origin and direction
+    const origin = raycaster.ray.origin;
+    const direction = raycaster.ray.direction
+        .clone()
+        .multiplyScalar(1000); // Extend the direction
+    const end = origin.clone().add(direction);
+
+    const geometry = new THREE.BufferGeometry().setFromPoints(
+        [origin, end]
+    );
+    const material = new THREE.LineBasicMaterial({
+        color: 0xff0000, // Make it RED
+    });
+    const line = new THREE.Line(geometry, material);
+    line.name = "rayLine"; // Name the line for easy reference
+
+    scene.add(line);
+}
+
 // #########################################################################################
 
 
@@ -102,25 +190,25 @@ const PointCloudViewer = forwardRef((props, ref) => {
                 payload: {
                     size: pcData.data.size, 
                     high: pcData.data.max_value, 
-                    low: pcData.data.min_value
+                    low: pcData.data.min_value,
                 }
             })
 
-            const points = pcd2points(pcData.geometry)
+            pointcloud = pcd2points(pcData.geometry)
 
             //points.geometry.computeBoundingBox()
             //console.log('pointcloud bbox', points.geometry.boundingBox.min)
             //prints pointcloud bbox { x: 0, y: 0, z: 92.41200256347656 }
             
-            points.geometry.center();
-            points.name = 'point_cloud';
-            points.material.size = 0.8
+            pointcloud.geometry.center();
+            pointcloud.name = 'point_cloud';
+            pointcloud.material.size = 0.8
 
             //points.geometry.rotateY((Math.PI / 2) * 3) // rotate 90 degreee three times
-            points.geometry.rotateX((Math.PI / 2) * 3) // rotate 90 degreee three times
-            points.geometry.rotateY((Math.PI / 2) * 3) // rotate 90 degreee three times
+            pointcloud.geometry.rotateX((Math.PI / 2) * 3) // rotate 90 degreee three times
+            pointcloud.geometry.rotateY((Math.PI / 2) * 3) // rotate 90 degreee three times
 
-            scene.add( points );
+            scene.add( pointcloud );
         
             render()
         }
@@ -148,7 +236,7 @@ const PointCloudViewer = forwardRef((props, ref) => {
     }, [testState])
 
     return (
-        <div ref={refContainer}>
+        <div ref={refContainer} onClick={() => clickEvent()} onMouseDown={() => onClickDownEvent()}>
         </div>
     )
 })

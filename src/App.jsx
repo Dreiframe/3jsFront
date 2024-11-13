@@ -36,10 +36,6 @@ function App() {
 
   return (
     <div>
-      <CoordinatesDisplay/>
-      <button onClick={() => clickEvent()}>fetch elevation map</button>
-      <button onClick={() => childRef.current.resetCamera()}>Reset camera</button>
-
       <div className='DualContainer'>
 
         <div style={{borderColor: "grey", borderStyle: "solid", borderWidth:"2px"}}>
@@ -51,13 +47,16 @@ function App() {
         </div>
 
       </div>
-      
-      <button onClick={() => dispatch({type: "SET_INFO", payload: {size: 250, high: 10, low: 2}})}>set map stat</button>
-      <button onClick={() => dispatch({type: "SET_CURSOR", payload: {x:1, y:1, z:1}})}>set map stat</button>
+
+      <CoordinatesDisplay/>
+      <button onClick={() => clickEvent()}>fetch elevation map</button>
+      <button onClick={() => childRef.current.resetCamera()}>Reset camera</button>
 
       <PointCloudStats/>
     </div>
   )
 }
 
+//<button onClick={() => dispatch({type: "SET_INFO", payload: {size: 250, high: 10, low: 2}})}>set map stat</button>
+//<button onClick={() => dispatch({type: "SET_CURSOR", payload: {x:1, y:1, z:1}})}>set map stat</button>
 export default App
