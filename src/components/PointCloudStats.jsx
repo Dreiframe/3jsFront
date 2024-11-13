@@ -41,9 +41,9 @@ export default function PointCloudStats () {
             <div>
                 <h4 style={{margin: 0}}>Cursor:</h4>
 
+                <p>z: {storage.cursor.z}</p>
                 <p>x: {storage.cursor.x}</p>
                 <p>y: {storage.cursor.y}</p>
-                <p>z: {storage.cursor.z}</p>
             </div>
         )
     }

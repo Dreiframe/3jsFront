@@ -220,7 +220,7 @@ export const tif2pcd3d = (data) => {
 }
 
 
-const arduinoMap = (x, in_min, in_max, out_min, out_max) => {
+export const arduinoMap = (x, in_min, in_max, out_min, out_max) => {
     // https://docs.arduino.cc/language-reference/en/functions/math/map/
     return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 }

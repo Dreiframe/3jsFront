@@ -4,7 +4,7 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls"
 import { useRef, useEffect, useState, forwardRef, useImperativeHandle, useContext } from 'react';
 
 import { getTifFile } from "../services/mmlAp";
-import { getTif, tif2pcd, pcd2points } from '../utils/tifUtilities';
+import { getTif, tif2pcd, pcd2points, arduinoMap } from '../utils/tifUtilities';
 import StorageContext from '../reducers/storageReducer';
 
 // three.js setup ##########################################################################
@@ -61,35 +61,6 @@ function onPointerMove( event ) {
 
     pointer.x = ( x / size ) *  2 - 1;
     pointer.y = ( y / size ) * - 2 + 1
-}
-
-function clickEvent(){
-    // dont execute if controls angles have changed since onMouseDown={() => onClickDownEvent()}, screen was dragged.
-    if (Math.abs(lastControlsAzimuth - controls.getAzimuthalAngle()) >= 0.01 &&
-        Math.abs(lastControlsPolar - controls.getPolarAngle()) >= 0.01){
-        return
-    }
-
-    raycaster.setFromCamera( pointer, camera );
-
-	intersects = raycaster.intersectObject( pointcloud );
-
-    if (diagnoseMode){
-        drawRay(raycaster)
-    }
-    //console.log(intersects)
-
-    /* Change pointcloud colors to red where intersects
-    if ( intersects.length > 0 ) {
-        for (let x in intersects) {
-            const indexi = intersects[x].index
-            pointcloud.geometry.attributes.color.setXYZ(indexi, 1, 0, 0) 
-        }
-    }
-    pointcloud.geometry.attributes.color.needsUpdate = true
-    */
-
-    render()
 }
 
 function onClickDownEvent(){
@@ -150,6 +121,42 @@ const PointCloudViewer = forwardRef((props, ref) => {
     const [testState, setTestState] = useState(null)
     const [storage, dispatch] = useContext(StorageContext)
 
+
+    function clickEvent(){
+        // dont execute if controls angles have changed since onMouseDown={() => onClickDownEvent()}, screen was dragged.
+        if (Math.abs(lastControlsAzimuth - controls.getAzimuthalAngle()) >= 0.01 &&
+            Math.abs(lastControlsPolar - controls.getPolarAngle()) >= 0.01){
+            return
+        }
+    
+        raycaster.setFromCamera( pointer, camera );
+    
+        intersects = raycaster.intersectObject( pointcloud );
+    
+        if (diagnoseMode){
+            drawRay(raycaster)
+        }
+    
+        if (intersects.length > 0) {
+            // elevation could be from 20 - 60 meters from sea level
+            // but pointcloud geometry could be for example -20 - +20
+            // using arduino map to linearly scale from geometry to sea level meters
+            // also pointcloud geometry has z and y axis flipped, so we are using y instea of z.
+            const selectedz = intersects[0].point.y
+            const bminz = pointcloud.geometry.boundingBox.min.y
+            const bmaxz = pointcloud.geometry.boundingBox.max.y
+            // const elevation = arduinoMap(selectedz, bminz, bmaxz, pointcloudStats.min_value, pointcloudStats.max_value)
+            const elevation = arduinoMap(selectedz, bminz, bmaxz, storage.stats.low, storage.stats.high)
+
+            //console.log(intersects[0].point)
+
+            dispatch({type: "SET_CURSOR", payload: {x:intersects[0].point.x + 250, y:intersects[0].point.z + 250, z:elevation}})
+        }
+    
+        render()
+    }
+
+
     // these functions are called outside of this component
     // like resetting camera on button click
     useImperativeHandle(ref, () => ({
@@ -196,7 +203,7 @@ const PointCloudViewer = forwardRef((props, ref) => {
 
             pointcloud = pcd2points(pcData.geometry)
 
-            //points.geometry.computeBoundingBox()
+            //pointcloud.geometry.computeBoundingBox()
             //console.log('pointcloud bbox', points.geometry.boundingBox.min)
             //prints pointcloud bbox { x: 0, y: 0, z: 92.41200256347656 }
             
