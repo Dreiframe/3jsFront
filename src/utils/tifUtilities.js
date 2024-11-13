@@ -4,6 +4,7 @@ import { decode } from 'tiff'
 
 
 const colorMap = (x, in_min, in_max) => {
+    // used for linear mapping.
     return (x - in_min) / (in_max - in_min);
 }
 
@@ -19,12 +20,18 @@ export const getTif = async (urlPath) => {
 
 
 export const tif2pcd = (data) => {
-        // https://github.com/image-js/tiff
+    // the purpose of this function
+    // decode .tif file into readable format
+    // calculate values like minZ maxZ and mean
+    // create xyz array for threejs geometry position
+    // create rgb array for threejs geometry color
+
+    // https://github.com/image-js/tiff
     // decode tiff file into readable format 
     const tiff = decode(data)[0]
     
 
-    // get z min and max for depth to color mapping
+    // get z min and max for elevation to color linear mapping
     let min_value = Number.MAX_VALUE
     let max_value = 0
     let mean_value = 0
@@ -43,7 +50,6 @@ export const tif2pcd = (data) => {
     }
 
     mean_value = mean_value / tiff.size
-    // tiff.resolutionUnit
 
     // tiff.data is a 1 dimensional array: 500x500 file is 250000 long
     // so we loop for y(500), then for x(500) and get z value from index(250000)
@@ -215,5 +221,6 @@ export const tif2pcd3d = (data) => {
 
 
 const arduinoMap = (x, in_min, in_max, out_min, out_max) => {
+    // https://docs.arduino.cc/language-reference/en/functions/math/map/
     return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 }

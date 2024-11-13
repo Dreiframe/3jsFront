@@ -1,5 +1,4 @@
 import * as THREE from 'three';
-import { PCDLoader } from "three/examples/jsm/loaders/PCDLoader"
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls"
 
 import { useRef, useEffect, useState, forwardRef, useImperativeHandle, useContext } from 'react';
@@ -14,7 +13,6 @@ const size = 500 // window.innerWidth
 var scene = new THREE.Scene()
 var camera = new THREE.PerspectiveCamera(75, size / size, 0.1, 1000)
 var renderer = new THREE.WebGLRenderer()
-const loader = new PCDLoader()
 const light = new THREE.HemisphereLight()
 
 // diagnose mode
@@ -55,14 +53,17 @@ function resetControls() {
 }
 
 
-// when page is initially loaded use local pcd file, because mml api takes for ever..
-var isLocal = true // false = get map from maanmittauslaitos
+// when page is initially loaded use local file, because fetching from api might take 20seconds.
+var isLocal = true
+
 // main component function
 const PointCloudViewer = forwardRef((props, ref) => {
     const refContainer = useRef(null)
     const [testState, setTestState] = useState(null)
     const [storage, dispatch] = useContext(StorageContext)
 
+    // these functions are called outside of this component
+    // like resetting camera on button click
     useImperativeHandle(ref, () => ({
 
         setScene(coordinates) {
@@ -80,7 +81,7 @@ const PointCloudViewer = forwardRef((props, ref) => {
     
     }));
     
-    // useRef renderer initialize
+    // useRef renderer initialize, attach three.js renderer to react element
     useEffect(() => {
         refContainer.current && refContainer.current.appendChild( renderer.domElement )
     },[])
@@ -92,8 +93,10 @@ const PointCloudViewer = forwardRef((props, ref) => {
         async function loadPointCloud(tifData) {
             if(!tifData) return undefined
 
+            // turn .tif file into pointcloud format, returns geometry colors and data info
             const pcData = tif2pcd(tifData)
 
+            // this is for displaying pointcloud data in other components
             dispatch({
                 type: "SET_INFO",
                 payload: {
@@ -123,6 +126,7 @@ const PointCloudViewer = forwardRef((props, ref) => {
         }
 
 
+        // true = load local file, false = fetch from maanmittauslaitos api.
         if( isLocal ){
             getTif('tif/main_test.tif')
                 .then(data => {
@@ -130,8 +134,6 @@ const PointCloudViewer = forwardRef((props, ref) => {
                 })
         } else {
             console.log('fetching data from mml api')
-
-            if (!testState) return;
 
             getTifFile(testState.lat, testState.lng)
                 .then(data => {
@@ -141,7 +143,6 @@ const PointCloudViewer = forwardRef((props, ref) => {
                     // backend down, or other issues?
                     console.log('error:', error)
             })
-
         }
 
     }, [testState])
