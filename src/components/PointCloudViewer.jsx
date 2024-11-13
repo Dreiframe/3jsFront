@@ -5,7 +5,7 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls"
 import { useRef, useEffect, useState, forwardRef, useImperativeHandle } from 'react';
 
 import { getTifFile } from "../services/mmlAp";
-import { tif2pcd3dcolor } from '../utils/tifUtilities';
+import { getTif, tif2pcd3dcolor, tif2pcd, pcd2points } from '../utils/tifUtilities';
 
 
 // three.js setup ##########################################################################
@@ -54,6 +54,7 @@ function resetControls() {
     controls.reset()
 }
 
+
 // when page is initially loaded use local pcd file, because mml api takes for ever..
 var isLocal = true // false = get map from maanmittauslaitos
 // main component function
@@ -85,25 +86,34 @@ const PointCloudViewer = forwardRef((props, ref) => {
 
     
     // pcd loader setup, update on state change.
+    // on initial page load get local pcd example file, faster than getting from mml api.
     useEffect(() => {
-        // on initial page load get local pcd example file, faster than getting from mml api.
+        async function loadPointCloud(tifData) {
+            if(!tifData) return undefined
+
+            const pcData = tif2pcd(tifData)
+            console.log(pcData)
+            const points = pcd2points(pcData.geometry)
+            
+            points.geometry.center();
+            points.name = 'point_cloud';
+            points.material.size = 0.8
+
+            //points.geometry.rotateY((Math.PI / 2) * 3) // rotate 90 degreee three times
+            points.geometry.rotateX((Math.PI / 2) * 3) // rotate 90 degreee three times
+            points.geometry.rotateY((Math.PI / 2) * 3) // rotate 90 degreee three times
+
+            scene.add( points );
+        
+            render()
+        }
+
+
         if( isLocal ){
-
-            loader.load( '/pcd/main_test.pcd', function ( points ) {
-                points.geometry.center();
-                points.name = 'point_cloud';
-                points.material.size = 0.8
-
-                // DRRRR &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-                //points.geometry.rotateY((Math.PI / 2) * 3) // rotate 90 degreee three times
-                points.geometry.rotateX((Math.PI / 2) * 3) // rotate 90 degreee three times
-                points.geometry.rotateY((Math.PI / 2) * 3) // rotate 90 degreee three times
-
-                scene.add( points );
-         
-                render()
-            })
-
+            getTif('tif/main_test.tif')
+                .then(data => {
+                    loadPointCloud(data)
+                })
         } else {
             console.log('fetching data from mml api')
 
@@ -111,22 +121,7 @@ const PointCloudViewer = forwardRef((props, ref) => {
 
             getTifFile(testState.lat, testState.lng)
                 .then(data => {
-                    console.log('converting fetched data to pointcloud')
-
-                    const points = tif2pcd3dcolor(data)
-
-                    console.log('done fetching')
-                    
-                    points.geometry.center()
-                    points.name = 'point_cloud';
-                    points.material.size = 0.8
-
-                    points.geometry.rotateX((Math.PI / 2) * 3) // rotate 90 degreee three times
-                    points.geometry.rotateY((Math.PI / 2) * 3) // rotate 90 degreee three times
-
-                    scene.add( points );
-                
-                    render()
+                    loadPointCloud(data)
             })
                 .catch(error => {
                     // backend down, or other issues?
