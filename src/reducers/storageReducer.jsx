@@ -34,7 +34,6 @@ interface storage {
 export const storageReducer = (state, action) => {
     switch (action.type){
         case "SET_INFO":
-            console.log(state)
             return {
                 ...state,
                 stats: {

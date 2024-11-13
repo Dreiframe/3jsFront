@@ -2,11 +2,11 @@ import * as THREE from 'three';
 import { PCDLoader } from "three/examples/jsm/loaders/PCDLoader"
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls"
 
-import { useRef, useEffect, useState, forwardRef, useImperativeHandle } from 'react';
+import { useRef, useEffect, useState, forwardRef, useImperativeHandle, useContext } from 'react';
 
 import { getTifFile } from "../services/mmlAp";
-import { getTif, tif2pcd3dcolor, tif2pcd, pcd2points } from '../utils/tifUtilities';
-
+import { getTif, tif2pcd, pcd2points } from '../utils/tifUtilities';
+import StorageContext from '../reducers/storageReducer';
 
 // three.js setup ##########################################################################
 const size = 500 // window.innerWidth
@@ -61,6 +61,7 @@ var isLocal = true // false = get map from maanmittauslaitos
 const PointCloudViewer = forwardRef((props, ref) => {
     const refContainer = useRef(null)
     const [testState, setTestState] = useState(null)
+    const [storage, dispatch] = useContext(StorageContext)
 
     useImperativeHandle(ref, () => ({
 
@@ -92,8 +93,21 @@ const PointCloudViewer = forwardRef((props, ref) => {
             if(!tifData) return undefined
 
             const pcData = tif2pcd(tifData)
-            console.log(pcData)
+
+            dispatch({
+                type: "SET_INFO",
+                payload: {
+                    size: pcData.data.size, 
+                    high: pcData.data.max_value, 
+                    low: pcData.data.min_value
+                }
+            })
+
             const points = pcd2points(pcData.geometry)
+
+            //points.geometry.computeBoundingBox()
+            //console.log('pointcloud bbox', points.geometry.boundingBox.min)
+            //prints pointcloud bbox { x: 0, y: 0, z: 92.41200256347656 }
             
             points.geometry.center();
             points.name = 'point_cloud';
