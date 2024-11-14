@@ -51,6 +51,10 @@ function App() {
       <CoordinatesDisplay/>
       <button onClick={() => clickEvent()}>fetch elevation map</button>
       <button onClick={() => childRef.current.resetCamera()}>Reset camera</button>
+      <label>
+        <input type="checkbox" onChange={() => childRef.current.setDiagnoseMode()}/>
+        diagnose mode
+      </label>
 
       <PointCloudStats/>
     </div>

@@ -9,23 +9,35 @@ import StorageContext from '../reducers/storageReducer';
 
 // three.js setup ##########################################################################
 console.log('Setting up three.js')
-const diagnoseMode = true
+var diagnoseMode = false
 const size = 500 // window.innerWidth
 
 var scene = new THREE.Scene()
 var camera = new THREE.PerspectiveCamera(75, size / size, 0.1, 1000)
+camera.layers.enable( 0 ) // enabled by default
+camera.layers.enable( 1 ) // used for diagnose mode
+camera.layers.toggle( 1 ) // set to off initially
 var renderer = new THREE.WebGLRenderer()
-const light = new THREE.HemisphereLight()
+// const light = new THREE.HemisphereLight()  // does nothing for pointcloud
 
 // diagnose mode
-if (diagnoseMode) { 
-    let texture = new THREE.TextureLoader().load( 'https://threejs.org/examples/textures/uv_grid_opengl.jpg' );
-    texture.mapping = THREE.EquirectangularReflectionMapping;
-    scene.background = texture;
-    // The X axis is red. The Y axis is green. The Z axis is blue. 
-    const axesHelper = new THREE.AxesHelper( 50 )
-    scene.add( axesHelper );
+// https://threejs.org/examples/?q=layers#webgl_layers
+const loader = new THREE.TextureLoader()
+let texture, axesHelper
+async function diagnoseOn() {
+    if (!texture){  // await because we render AFTER texture is loaded, this is done only once.
+        texture = await loader.loadAsync( 'backgrounds/uv_grid_opengl.jpg' )
+        texture.mapping = THREE.EquirectangularReflectionMapping
+    }
+    if (!axesHelper) {
+        axesHelper = new THREE.AxesHelper( 50 )
+        axesHelper.layers.set( 1 )  // diagnose layer
+        scene.add( axesHelper )
+    }
+    if (diagnoseMode) scene.background = texture
+    else scene.background = null
 }
+// diagnose end
 
 renderer.setSize(size, size)
 camera.position.y = 350
@@ -37,7 +49,7 @@ controls.maxDistance = 350
 controls.zoomSpeed = 2
 
 
-scene.add(light)
+//scene.add(light)  // wtf does nothing??
 // #########################################################################################
 
 
@@ -91,6 +103,7 @@ function drawRay(raycaster) {
     });
     const line = new THREE.Line(geometry, material);
     line.name = "rayLine"; // Name the line for easy reference
+    line.layers.set(1)
 
     scene.add(line);
 }
@@ -109,6 +122,13 @@ function resetScene() {
 
 function resetControls() {
     controls.reset()
+}
+
+async function setDiagnoseMode() {
+    camera.layers.toggle( 1 )
+    diagnoseMode = !diagnoseMode
+    await diagnoseOn()
+    render()
 }
 
 
@@ -133,7 +153,7 @@ const PointCloudViewer = forwardRef((props, ref) => {
     
         intersects = raycaster.intersectObject( pointcloud );
     
-        if (diagnoseMode){
+        if (true){  // if (diagnoseMode)
             drawRay(raycaster)
         }
     
@@ -172,6 +192,10 @@ const PointCloudViewer = forwardRef((props, ref) => {
 
         resetCamera() {
             resetControls()
+        },
+
+        setDiagnoseMode() {
+            setDiagnoseMode()
         }
     
     }));
